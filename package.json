@@ -1,0 +1,20 @@
+{
+  "name": "vocabulary-tree",
+  "version": "0.1.0",
+  "description": "어휘력 세계수 — 한자 한 글자가 키워내는 어휘 나무",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npx -y serve . -l 3005",
+    "start": "npx -y serve . -l 3005",
+    "validate": "node tools/validate-data.js"
+  },
+  "keywords": [
+    "korean",
+    "hanja",
+    "vocabulary",
+    "education",
+    "pwa"
+  ],
+  "license": "MIT"
+}
