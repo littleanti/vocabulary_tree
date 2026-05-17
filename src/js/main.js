@@ -15,6 +15,7 @@ import { attachDrag } from './blocks/drag.js';
 import { isCorrectNext, isComplete } from './blocks/match.js';
 import { showLeafModal, showMiniquiz, closeModal } from './ui/modal.js';
 import { renderLockScreen } from './ui/lock.js';
+import { renderOverview, stageFor, stageLabel } from './tree/overview.js';
 
 // =======================
 // Screen routing
@@ -324,29 +325,19 @@ async function goToLock(hanja, completedWords) {
 // =======================
 // Tree overview (M2 stub — M1: 단순 누적 어휘 카운트 화면)
 // =======================
+let overviewHandle = null;
+
 async function showTreeOverview() {
   const el = document.getElementById('screen-tree');
-  const allWords = await db.listLearnedWords();
-  const allHanja = await db.listLearnedHanja();
-  el.innerHTML = `
-    <div class="screen-header">
-      <h2>🌳 누적 나무</h2>
-      <button class="close-btn" id="tree-back">✕</button>
-    </div>
-    <div class="today-hanja-card" style="aspect-ratio:auto;height:auto;padding:24px;gap:12px;">
-      <span style="font-size:3rem;">🌱</span>
-      <p style="font-family:'Gowun Dodum',sans-serif;text-align:center;">
-        지금까지 자란 어휘 나무는<br>
-        <strong style="color:var(--coral);font-family:'Jua',sans-serif;font-size:1.5rem;">한자 ${allHanja.length}자 · 어휘 ${allWords.length}개</strong><br>
-        ${allWords.length >= 30 ? '🎉 학술 어휘 보스가 해금되었어요!' : `보스까지 ${30 - allWords.length}어휘 남았어요`}
-      </p>
-    </div>
-    <div class="splash-foot">
-      <button class="btn small" id="tree-home">🏠 홈으로</button>
-    </div>
-  `;
-  el.querySelector('#tree-back').addEventListener('click', () => showScreen(SCREENS.SPLASH));
-  el.querySelector('#tree-home').addEventListener('click', () => showScreen(SCREENS.SPLASH));
+  overviewHandle?.destroy?.();
+  await renderOverview(el, {
+    onLeafClick: (word) => showLeafModal(word, { autoSpeak: true }),
+  });
+  el.addEventListener('ov-close', () => {
+    overviewHandle?.destroy?.();
+    overviewHandle = null;
+    showScreen(SCREENS.SPLASH);
+  }, { once: true });
   showScreen(SCREENS.TREE);
 }
 
