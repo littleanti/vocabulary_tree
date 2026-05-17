@@ -390,12 +390,17 @@ async function showTreeOverview() {
 // Boss (M4 stub — M1에서는 진입 안내만)
 // =======================
 async function enterBoss() {
-  const mod = await import('./boss/decompose.js').catch(() => null);
-  if (mod?.startBoss) {
-    mod.startBoss();
-  } else {
-    toast('학술 어휘 보스는 M4에서 활성화됩니다');
+  const unlocked = await hasBossUnlocked();
+  if (!unlocked) {
+    const cnt = await db.countLearnedWords();
+    toast(`보스까지 ${CONFIG.BOSS_UNLOCK_WORDS - cnt}어휘 더 학습해요`);
+    return;
   }
+  const mod = await import('./boss/decompose.js');
+  mod.startBoss({
+    db,
+    onComplete: () => showScreen(SCREENS.SPLASH),
+  });
 }
 
 // =======================
