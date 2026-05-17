@@ -7,7 +7,8 @@
   "scripts": {
     "dev": "npx -y serve . -l 3005",
     "start": "npx -y serve . -l 3005",
-    "validate": "node tools/validate-data.js"
+    "validate": "node tools/validate-data.js",
+    "test": "node tools/test-srl.js"
   },
   "keywords": [
     "korean",

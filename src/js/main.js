@@ -7,7 +7,7 @@ import { speak, cancel as cancelTTS } from './tts.js';
 import * as db from './db.js';
 import { decideTodayHanja, buildTodayQueue, isLockedToday, getTodayProgress } from './curriculum.js';
 import { applyResult, seedSrl, applyWrongMini } from './srl.js';
-import { getWordsForHanja } from '../data/words.js';
+import { getWordsForHanja, WORDS } from '../data/words.js';
 import { renderSapling, highlightBranch, growBranch, slotEndToScreen } from './tree/render.js';
 import { placeLeaf, repositionLeaves } from './tree/leaves.js';
 import { spawnBlocks, clearBlocks, consumeBlock, returnBlock } from './blocks/spawn.js';
@@ -94,16 +94,14 @@ let placedBranchIndexes = [];
 
 async function startPlay() {
   const hanja = (await import('../data/hanja.js')).getHanja(state.today.hanjaId);
-  const queue = await buildTodayQueue(hanja);
   state.today.hanjaCurrent = hanja;
 
-  // 신규 어휘 (M1: 복습은 M3에서 통합)
+  // 신규 어휘
   const learned = new Set((await db.listLearnedWords()).map(w => w.wordId));
   const allWords = getWordsForHanja(hanja.id);
   const remaining = allWords.filter(w => !learned.has(w.id)).slice(0, CONFIG.DAILY_TARGET_WORDS);
 
   if (!remaining.length) {
-    // 이미 다 학습 — 락 화면 또는 트리 오버뷰
     await goToLock(hanja, allWords.slice(0, CONFIG.DAILY_TARGET_WORDS));
     return;
   }
@@ -115,7 +113,36 @@ async function startPlay() {
 
   renderPlayScreen(hanja);
   showScreen(SCREENS.PLAY);
+
+  // SRL 복습 큐: 신규 어휘 *전에* 등장
+  const due = await db.dueSrlWords();
+  if (due.length > 0) {
+    await runReviewPhase(due);
+  }
+
   loadNextWord();
+}
+
+async function runReviewPhase(due) {
+  setMessage(`🔁 복습 ${due.length}어휘 먼저 확인할게요`);
+  // 한 번에 너무 많지 않게 최대 6개로 제한
+  const reviewList = due.slice(0, 6);
+  for (const srlRow of reviewList) {
+    const word = WORDS.find(w => w.id === srlRow.wordId);
+    if (!word) continue;
+    await new Promise(resolve => {
+      showMiniquiz(word, {
+        onResult: async ({ correct, skipped }) => {
+          if (skipped) return resolve();
+          const prev = await db.getSrl(word.id);
+          const next = correct ? applyResult(prev, true) : applyWrongMini(prev);
+          await db.upsertSrl({ wordId: word.id, ...next });
+          resolve();
+        },
+      });
+    });
+  }
+  setMessage('🌱 이제 새 어휘를 만나요!');
 }
 
 function renderPlayScreen(hanja) {
@@ -184,6 +211,8 @@ function loadNextWord() {
   state.session.needSyllables = [...word.syllables];
   state.session.placedSyllables = [];
   state.session.currentBranchIdx = getActiveSlot();
+  state.session.wrongCount = 0;
+  state.session.miniQuizShown = false;
 
   renderWordTarget(word);
 
@@ -240,10 +269,26 @@ function onBlockDrop(blockEl, syllable, slotIdx) {
   if (!word) return;
   const isMatchCorrect = isCorrectNext(state.session.needSyllables, syllable);
   if (!isMatchCorrect) {
-    // 오답 — 원위치 + 진동 + 메시지 + 미니퀴즈는 어휘 단위(다 채운 후)에서.
+    // 오답 — 원위치 + 진동 + 메시지
     returnBlock(blockEl);
     vibrate([20, 30, 20]);
-    setMessage('다시 한번 시도해요!');
+    state.session.wrongCount = (state.session.wrongCount || 0) + 1;
+    // 같은 어휘에서 2회 이상 오답 → 미니퀴즈 즉시 등장
+    if (state.session.wrongCount >= 2 && !state.session.miniQuizShown) {
+      state.session.miniQuizShown = true;
+      setMessage('잠깐, 의미부터 짚고 가요');
+      showMiniquiz(word, {
+        onResult: async ({ correct }) => {
+          if (correct) {
+            setMessage('좋아요! 이제 음절을 맞춰봐요');
+          } else {
+            setMessage(`'${word.text}' — ${word.meaning}`);
+          }
+        },
+      });
+    } else {
+      setMessage('다시 한번 시도해요!');
+    }
     return;
   }
   // 정답 음절 한 개
@@ -468,11 +513,36 @@ async function boot() {
     }
   }
 
-  // Auto-save on visibility change
+  // 자정 경과 감지 — 락 해제 + 미완료 SRL 이월 (자동 적용)
+  // 매 60초마다 todayISO 변화 감지하면 갱신
+  let lastDate = todayISO();
+  setInterval(() => {
+    const now = todayISO();
+    if (now !== lastDate) {
+      lastDate = now;
+      // 오늘 시작점으로 복귀
+      state.today.date = now;
+      state.today.hanjaId = null;
+      state.today.completed = [];
+      state.today.locked = false;
+      // 사용자가 lock 화면이거나 splash면 today 화면으로 안내
+      if (['splash', 'lock'].includes(state.ui.screen)) {
+        toast('새로운 하루가 시작되었어요 🌅');
+      }
+    }
+  }, 60 * 1000);
+
+  // Auto-save on visibility change — 모든 학습 이벤트는 즉시 IndexedDB 커밋되므로
+  // 여기서는 TTS 정리 + 복귀 시 자정 체크.
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') {
-      // Saved-on-each-step already; here just cancel TTS
       cancelTTS();
+    } else if (document.visibilityState === 'visible') {
+      const now = todayISO();
+      if (now !== lastDate) {
+        lastDate = now;
+        toast('새로운 하루가 시작되었어요 🌅');
+      }
     }
   });
 
