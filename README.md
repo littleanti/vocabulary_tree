@@ -59,6 +59,7 @@ npm run validate
 - [docs/PRD.md](docs/PRD.md) — 제품 요구사항
 - [docs/TRD.md](docs/TRD.md) — 기술 설계
 - [docs/PLAN.md](docs/PLAN.md) — 마일스톤
+- [docs/STATUS.md](docs/STATUS.md) — M7 베타 진입 자가 점검
 - [AGENTS.md](AGENTS.md) — AI 에이전트 가이드
 
 ## 라이선스
