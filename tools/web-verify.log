@@ -1,0 +1,51 @@
+▶ Starting npx serve on :3005...
+▶ Launching firefox headless...
+Skipping host requirements validation logic because `PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS` env variable is set.
+
+=== US-001 Splash load ===
+  ✓ US-001 GET / 200
+  ✓ US-001 title='어휘력 세계수'
+  ✓ US-001 splash h1 == '어휘력 세계수'
+
+=== US-006 PWA 응답 ===
+  ✓ US-006 manifest.webmanifest 200
+  ✓ US-006 manifest.name == 어휘력 세계수
+  ✓ US-006 manifest.theme_color == #FF7757
+  ✓ US-006 sw.js 200
+  ✓ US-006 Service Worker registered
+
+=== US-002 M1 풀 사이클 ===
+  ✓ US-002 today 화면 한자 글리프 표시
+  ✓ US-002 play .tree-stage 표시
+  ✓ US-002 word-target 슬롯 ≥ 2
+  ✓ US-002 syllable-block ≥ 슬롯 수 + 더미
+  ✓ US-002 4어휘 풀 사이클 완료
+  ✓ US-002 screen-lock.active
+  ✓ US-002 .lock-emoji 표시
+  ✓ US-002 누적 어휘 ≥ 4
+
+=== US-003 누적 나무 ===
+  ✓ US-003 screen-tree.active
+  ✓ US-003 .overview-meta meta-chip ≥ 3
+  ✓ US-003 .minimap + viewport 존재
+  ✓ US-003 ov-g transform 형식 matrix(...)
+
+=== US-005 학부모 대시보드 PIN ===
+  ✓ US-005 screen-dashboard.active
+  ✓ US-005 .pin-pad 노출 (PIN 설정 화면)
+  ✓ US-005 pinHash 64자리 SHA-256 저장
+
+=== US-004 학술 보스 ===
+  ✓ US-004 30어휘 시드 성공
+  ✓ US-004 #today-boss 버튼 노출 (≥30 시)
+  ✓ US-004 screen-boss.active
+  ✓ US-004 .boss-word 표시
+  ✓ US-004 boss slots/cards 같은 수 ≥ 2
+
+=== US-007 콘솔/네트워크 종합 ===
+  ✓ US-007 콘솔 에러 0건
+  ✓ US-007 네트워크 실패 0건
+
+로그: /home/wondeuk/repos/hangul_games/5_vocabulary_tree/tools/web-verify.log
+
+=== 최종: 30 pass / 0 fail ===

@@ -1,7 +1,7 @@
 // Service Worker — PWA cache-first strategy with network fallback
 // Precache core assets at install; skipWaiting + clients.claim for immediate activation
 
-const CACHE_NAME = 'vt-cache-v1';
+const CACHE_NAME = 'vt-cache-v2';
 
 const PRECACHE_URLS = [
   './',
@@ -83,52 +83,22 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Fetch: cache-first for same-origin, stale-while-revalidate for fonts
+// Fetch: cache-first for same-origin only.
+// Cross-origin (fonts, esm CDN) → let the browser handle natively to avoid
+// CORS / opaque-response issues when re-fetching from the SW context.
 self.addEventListener('fetch', (event) => {
   const { request } = event;
+
+  // Non-GET / cross-origin → no-op (browser default fetch).
+  if (request.method !== 'GET') return;
   const url = new URL(request.url);
+  if (url.origin !== location.origin) return;
 
-  // Network-only for non-GET
-  if (request.method !== 'GET') {
-    event.respondWith(fetch(request));
-    return;
-  }
-
-  // Same-origin: cache-first
-  if (url.origin === location.origin) {
-    event.respondWith(
-      caches.match(request).then((cached) => {
-        if (cached) return cached;
-        return fetch(request).catch(() => {
-          // Network failed; try generic fallback
-          return caches.match('./index.html');
-        });
-      })
-    );
-    return;
-  }
-
-  // Google Fonts: stale-while-revalidate
-  if (url.hostname.includes('fonts.googleapis.com') || url.hostname.includes('fonts.gstatic.com')) {
-    event.respondWith(
-      caches.match(request).then((cached) => {
-        const fetchPromise = fetch(request).then((response) => {
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(request, response.clone());
-          });
-          return response;
-        });
-        return cached || fetchPromise;
-      })
-    );
-    return;
-  }
-
-  // Others: network-first with cache fallback
   event.respondWith(
-    fetch(request)
-      .then((response) => response)
-      .catch(() => caches.match(request))
+    caches.match(request).then((cached) => {
+      if (cached) return cached;
+      return fetch(request).catch(() => caches.match('./index.html'));
+    })
   );
 });
 

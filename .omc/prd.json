@@ -1,0 +1,96 @@
+{
+  "title": "어휘력 세계수 — 웹 봇 자동 검증",
+  "description": "Playwright headless 브라우저로 구현한 M0~M6 핵심 사용자 시나리오를 자동 검증한다.",
+  "stories": [
+    {
+      "id": "US-001",
+      "title": "Playwright 설치 + 정적 서버 기동 + 스플래시 로드",
+      "priority": 1,
+      "passes": true,
+      "acceptanceCriteria": [
+        "npx playwright(@latest) chromium 헤드리스로 http://localhost:3005 진입 시 페이지 로드 200",
+        "title이 '어휘력 세계수'",
+        "스플래시 h1 텍스트가 '어휘력 세계수'로 렌더링됨",
+        "콘솔 에러 0개 (Service Worker / 모듈 로드 실패 등)"
+      ]
+    },
+    {
+      "id": "US-002",
+      "title": "M1 묘목 MVP — 풀 사이클 자동 시뮬레이션 (4어휘 학습 → 락)",
+      "priority": 2,
+      "passes": true,
+      "acceptanceCriteria": [
+        "스플래시 → '오늘 학습 시작' → today 화면에서 한자 카드 렌더 확인",
+        "play 화면 진입 후 .tree-stage, .syllable-block, .word-target 렌더",
+        "synthetic PointerEvent로 4어휘 풀 사이클 시뮬레이션 가능",
+        "4어휘 완료 후 screen-lock.active + .lock-emoji 표시",
+        "lock 화면의 누적 어휘 수가 4 이상으로 표시"
+      ]
+    },
+    {
+      "id": "US-003",
+      "title": "M2 누적 나무 + 카메라 + 미니맵",
+      "priority": 3,
+      "passes": true,
+      "acceptanceCriteria": [
+        "lock '나무 보기' → screen-tree.active",
+        ".overview-meta meta-chip 3개 (단계/한자/어휘)",
+        ".minimap + .minimap-viewport 존재",
+        "#ov-svg #ov-g transform=matrix(...) (카메라 적용됨)"
+      ]
+    },
+    {
+      "id": "US-004",
+      "title": "M4 학술 보스 게이트 + UI 진입",
+      "priority": 4,
+      "passes": true,
+      "acceptanceCriteria": [
+        "30어휘 미만 시 #today-boss 미노출 / 30어휘 시드 후 노출",
+        "보스 진입 시 .boss-word, .boss-slot N개, .boss-card-btn N개 렌더",
+        "slots/cards 같은 수 ≥ 2"
+      ]
+    },
+    {
+      "id": "US-005",
+      "title": "M5 학부모 대시보드 PIN 플로우",
+      "priority": 5,
+      "passes": true,
+      "acceptanceCriteria": [
+        "splash 학부모 대시보드 클릭 시 screen-dashboard.active",
+        "최초 진입: .pin-pad 노출",
+        "PIN 설정 완료 후 IndexedDB profile.pinHash = 64자리 SHA-256 저장"
+      ]
+    },
+    {
+      "id": "US-006",
+      "title": "M6 PWA — manifest + Service Worker 등록",
+      "priority": 6,
+      "passes": true,
+      "acceptanceCriteria": [
+        "/manifest.webmanifest 200 + name 어휘력 세계수 + theme #FF7757",
+        "/sw.js 200",
+        "Service Worker registration 성공"
+      ]
+    },
+    {
+      "id": "US-007",
+      "title": "콘솔/네트워크 종합 점검",
+      "priority": 7,
+      "passes": true,
+      "acceptanceCriteria": [
+        "전체 시나리오 console.error 0건",
+        "Failed requests 0건",
+        "결과 tools/web-verify.log 에 기록"
+      ]
+    }
+  ],
+  "summary": {
+    "totalChecks": 30,
+    "passed": 30,
+    "failed": 0,
+    "browser": "Firefox 1522 (Playwright)",
+    "completedAt": "2026-05-17",
+    "logPath": "tools/web-verify.log",
+    "harness": "tools/web-verify.mjs"
+  }
+}

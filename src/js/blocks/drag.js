@@ -39,7 +39,7 @@ export function attachDrag(stageEl, handlers) {
     const target = ev.target.closest('.syllable-block');
     if (!target || target.classList.contains('matched')) return;
     ev.preventDefault();
-    target.setPointerCapture?.(ev.pointerId);
+    try { target.setPointerCapture?.(ev.pointerId); } catch {}
     activeSlots = handlers.getActiveSlots();
     const startPt = getStagePoint(ev);
     const tx = Number(target.dataset.x);

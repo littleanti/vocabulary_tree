@@ -11,6 +11,8 @@ import { createMinimap } from './minimap.js';
 const SAPLING_CELL = 480;          // cell size in content coordinates
 const COLS = 4;                    // 한 줄에 4 그루
 const ROOT_R = 40;                 // root circle radius
+const BRANCH_ANGLES = [-55, -22, 22, 55]; // 4-slot fan angles (deg, 0 = up)
+const BRANCH_LEN = 150;            // overview-stage branch length
 
 function cellOrigin(idx) {
   const r = Math.floor(idx / COLS);
@@ -22,10 +24,11 @@ function cellOrigin(idx) {
 }
 
 function branchEnd(origin, slotIdx) {
-  const angles = [-55, -22, 22, 55];
-  const len = 150;
-  const a = ((angles[slotIdx] || 0) - 90) * Math.PI / 180;
-  return { x: origin.cx + Math.cos(a) * len, y: origin.cy - 80 + Math.sin(a) * len };
+  const a = ((BRANCH_ANGLES[slotIdx] || 0) - 90) * Math.PI / 180;
+  return {
+    x: origin.cx + Math.cos(a) * BRANCH_LEN,
+    y: origin.cy - 80 + Math.sin(a) * BRANCH_LEN,
+  };
 }
 
 function trunkPath(origin) {
@@ -35,9 +38,7 @@ function trunkPath(origin) {
 function branchPath(origin, slotIdx) {
   const start = { x: origin.cx, y: origin.cy - 80 };
   const end = branchEnd(origin, slotIdx);
-  const angles = [-55, -22, 22, 55];
-  const a = angles[slotIdx] || 0;
-  const curl = a > 0 ? 12 : -12;
+  const curl = (BRANCH_ANGLES[slotIdx] || 0) > 0 ? 12 : -12;
   return `M ${start.x} ${start.y} Q ${(start.x + end.x) / 2 + curl} ${(start.y + end.y) / 2} ${end.x} ${end.y}`;
 }
 
@@ -172,7 +173,22 @@ export async function renderOverview(rootEl, { onLeafClick } = {}) {
     g.appendChild(sub);
   });
 
+  // 잎 (DOM overlay; SVG g 좌표 → 화면 좌표 변환)
+  // 카메라 onChange 콜백에서 placeLeaves(leafEntries)를 호출하기 때문에,
+  // leafEntries는 반드시 createCamera 호출 전에 초기화돼야 한다 (TDZ 회피).
+  const leafEntries = []; // { word, contentX, contentY, golden }
+  hanjaList.forEach((h, idx) => {
+    const origin = cellOrigin(idx);
+    const wordsForH = WORDS.filter(w => w.hanjaId === h.id).slice(0, 4);
+    wordsForH.forEach((w, slotIdx) => {
+      if (!wordIdsLearned.has(w.id)) return;
+      const end = branchEnd(origin, slotIdx);
+      leafEntries.push({ word: w, contentX: end.x, contentY: end.y, golden: false });
+    });
+  });
+
   // 카메라
+  let minimap = null;
   const camera = createCamera({
     stageEl,
     contentEl: g,
@@ -182,19 +198,6 @@ export async function renderOverview(rootEl, { onLeafClick } = {}) {
       placeLeaves(s);
       minimap?.updateViewport(s);
     },
-  });
-
-  // 잎 (DOM overlay; SVG g 좌표 → 화면 좌표 변환)
-  // 모든 학습 어휘에 대해 잎 위치 미리 계산 (content 좌표)
-  const leafEntries = []; // { wordId, contentX, contentY, golden }
-  hanjaList.forEach((h, idx) => {
-    const origin = cellOrigin(idx);
-    const wordsForH = WORDS.filter(w => w.hanjaId === h.id).slice(0, 4);
-    wordsForH.forEach((w, slotIdx) => {
-      if (!wordIdsLearned.has(w.id)) return;
-      const end = branchEnd(origin, slotIdx);
-      leafEntries.push({ word: w, contentX: end.x, contentY: end.y, golden: false });
-    });
   });
 
   function placeLeaves(state) {
@@ -230,7 +233,7 @@ export async function renderOverview(rootEl, { onLeafClick } = {}) {
 
   // Minimap with thumbnail
   const thumbnail = svg.innerHTML; // 현재 svg 내부 SVG 직렬화
-  const minimap = createMinimap(stageEl, {
+  minimap = createMinimap(stageEl, {
     contentSvgInnerHTML: thumbnail,
     contentWidth,
     contentHeight,
