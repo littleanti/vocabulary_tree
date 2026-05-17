@@ -362,9 +362,21 @@ async function goToLock(hanja, completedWords) {
     hanja,
     completedWords,
     onTreeView: () => showTreeOverview(),
-    onDashboard: () => showScreen(SCREENS.DASHBOARD),
+    onDashboard: () => openDashboardScreen(),
   });
   showScreen(SCREENS.LOCK);
+}
+
+async function openDashboardScreen() {
+  const mod = await import('./ui/dashboard.js').catch(err => {
+    console.error('dashboard load failed', err);
+    return null;
+  });
+  if (mod?.openDashboard) {
+    mod.openDashboard({ onClose: () => showScreen(SCREENS.SPLASH) });
+  } else {
+    toast('학부모 대시보드를 불러올 수 없어요');
+  }
 }
 
 // =======================
@@ -423,11 +435,7 @@ function renderSplash() {
   `;
   el.querySelector('#btn-today').addEventListener('click', () => showTodayScreen());
   el.querySelector('#btn-tree').addEventListener('click', () => showTreeOverview());
-  el.querySelector('#btn-dashboard').addEventListener('click', async () => {
-    const mod = await import('./ui/dashboard.js').catch(() => null);
-    if (mod?.openDashboard) mod.openDashboard();
-    else showScreen(SCREENS.DASHBOARD);
-  });
+  el.querySelector('#btn-dashboard').addEventListener('click', openDashboardScreen);
   el.querySelector('#btn-settings').addEventListener('click', () => openSettings());
 }
 
