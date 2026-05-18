@@ -45,12 +45,11 @@ body::before {
 }
 
 .screen {
-  display: none;
   animation: fadeIn 0.35s ease;
 }
 
-.screen.active {
-  display: block;
+.screen:not(.active) {
+  display: none !important;
 }
 
 @keyframes fadeIn {
