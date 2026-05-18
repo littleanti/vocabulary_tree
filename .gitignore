@@ -3,8 +3,7 @@ node_modules/
 .env
 .env.local
 *.Zone.Identifier
-.omc/state/
-.omc/logs/
+.omc/
 .claude/
 package-lock.json
 *.deb
