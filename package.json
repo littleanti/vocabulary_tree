@@ -5,8 +5,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "npx -y serve . -l 3005",
-    "start": "npx -y serve . -l 3005",
+    "dev": "npx -y serve . -l 4325",
+    "start": "npx -y serve . -l 4325",
     "validate": "node tools/validate-data.js",
     "test": "node tools/test-srl.js"
   },

@@ -8,7 +8,7 @@
       "priority": 1,
       "passes": true,
       "acceptanceCriteria": [
-        "npx playwright(@latest) chromium 헤드리스로 http://localhost:3005 진입 시 페이지 로드 200",
+        "npx playwright(@latest) chromium 헤드리스로 http://localhost:4325 진입 시 페이지 로드 200",
         "title이 '어휘력 세계수'",
         "스플래시 h1 텍스트가 '어휘력 세계수'로 렌더링됨",
         "콘솔 에러 0개 (Service Worker / 모듈 로드 실패 등)"

@@ -8,7 +8,7 @@
 
 ```bash
 npm run dev
-# → http://localhost:3005
+# → http://localhost:4325
 ```
 
 빌드 도구 없음. 정적 파일 그대로 서빙.

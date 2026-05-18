@@ -16,7 +16,7 @@ const BROWSERS = { chromium, firefox, webkit };
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = resolve(__dirname, '..');
-const PORT = 3005;
+const PORT = 4325;
 const BASE = `http://localhost:${PORT}`;
 const LOG_PATH = resolve(PROJECT_ROOT, 'tools/web-verify.log');
 

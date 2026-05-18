@@ -12,7 +12,7 @@
 | 시각화 | SVG (나무·가지) + Canvas 2D (잎 파티클) | SVG는 DOM hit zone, Canvas는 다량 파티클 |
 | CSS | Vanilla CSS + CSS Variables | 토큰 관리 일관성 |
 | 폰트 | 한자 서브셋(Noto Sans KR/SC) + 본문(Gowun Dodum) | `font-display: swap` |
-| 개발 서버 | `npx serve -p 3005` | zero-config |
+| 개발 서버 | `npx serve -p 4325` | zero-config |
 | 영속화 | **IndexedDB via Dexie.js** | localStorage 5MB 한도 회피 (누적 학습 데이터) |
 | TTS | Web Speech API | 네이티브 |
 | 알림 | Notification API + (옵션) Service Worker `showNotification` | PWA 로컬 알림 |
@@ -316,7 +316,7 @@ function nextInterval(prev, correct) {
 
 | 옵션 | 명령 |
 |---|---|
-| 로컬 개발 | `npx serve -p 3005` |
+| 로컬 개발 | `npx serve -p 4325` |
 | GitHub Pages | `gh-pages` 브랜치 푸시 |
 | Netlify / Vercel / Cloudflare Pages | 정적 업로드 |
 | PWA 설치 | manifest + Service Worker 자동 인식 |

@@ -34,7 +34,7 @@
 
 ### Phase 1.1 — 골격
 - [ ] 디렉터리/모듈 구조 셋업 (TRD §2.1)
-- [ ] 정적 서버 진입 (`npx serve -p 3005`)
+- [ ] 정적 서버 진입 (`npx serve -p 4325`)
 - [ ] `state.js` 싱글톤 + `config.js` 상수
 - [ ] Dexie 스키마 v1 + 기본 CRUD (`db.js`)
 - [ ] 화면 상태 머신 (`splash → today → play → leaf-modal`)

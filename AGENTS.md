@@ -75,7 +75,7 @@
 
 ### Working In This Directory
 - 미구현 설계 단계
-- 권장 스택: Vanilla JS + CSS + Canvas/SVG (나무 시각화), 포트 **3005**
+- 권장 스택: Vanilla JS + CSS + Canvas/SVG (나무 시각화), 포트 **4325**
 - IndexedDB로 SRL 스케줄 영속화 (학습 데이터가 누적됨, localStorage 한도 위험)
 
 ### Implementation Priorities

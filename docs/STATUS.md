@@ -61,7 +61,7 @@ JS 문법 점검: `find src tools sw.js -name "*.js" -exec node --check {} \;`
 
 ```bash
 # 로컬 개발
-npm run dev          # http://localhost:3005
+npm run dev          # http://localhost:4325
 
 # 정적 호스팅 (GitHub Pages / Netlify / Vercel)
 # → 루트 디렉터리 그대로 업로드. 빌드 단계 없음.
